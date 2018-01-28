@@ -83,6 +83,14 @@ async function githubWebhook(ctx: Koa.Context) {
         ctx.throw('Invalid signature', 400)
     }
 
+    const event = ctx.request.get('X-GitHub-Event')
+    if (event === 'ping') {
+        ctx.body = 'Pong'
+        return
+    } else if (event !== 'push') {
+        ctx.throw('Invalid event', 400)
+    }
+
     const payload = ctx.request['body']
     const matches = /^refs\/heads\/(.+)$/.exec(payload.ref)
     if (!matches || !matches[1]) {
