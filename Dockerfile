@@ -13,7 +13,7 @@ RUN apk add --no-cache \
 
 # install application dependencies
 COPY package.json yarn.lock ./
-RUN yarn install --non-interactive --frozen-lockfile
+RUN JOBS=max yarn install --non-interactive --frozen-lockfile
 
 # copy in application source
 COPY . .
