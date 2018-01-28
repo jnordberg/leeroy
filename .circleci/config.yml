@@ -8,13 +8,13 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-          - node8-dependencies-{{ checksum "yarn.lock" }}
-          - node8-dependencies-
+          - node8-{{ checksum "yarn.lock" }}
+          - node8-
       - run: BUILD_ONLY=true JOBS=max yarn install --frozen-lockfile
       - save_cache:
           paths:
             - node_modules
-          key: node8-dependencies-{{ checksum "yarn.lock" }}
+          key: node8-{{ checksum "yarn.lock" }}
       - run: yarn test
       - store_test_results:
           path: reports
@@ -29,13 +29,13 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-          - node9-dependencies-{{ checksum "yarn.lock" }}
-          - node9-dependencies-
+          - node9-{{ checksum "yarn.lock" }}
+          - node9-
       - run: BUILD_ONLY=true JOBS=max yarn install --frozen-lockfile
       - save_cache:
           paths:
             - node_modules
-          key: node9-dependencies-{{ checksum "yarn.lock" }}
+          key: node9-{{ checksum "yarn.lock" }}
       - run: yarn test
       - store_test_results:
           path: reports
