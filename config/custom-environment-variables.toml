@@ -1,0 +1,13 @@
+port = 'PORT'
+proxy = 'IS_PROXIED'
+num_workers = 'NUM_WORKERS'
+log_level = 'LOG_LEVEL'
+log_output = 'LOG_OUTPUT'
+work_dir = 'WORK_DIR'
+github_secret = 'GITHUB_SECRET'
+[slack]
+url = 'SLACK_URL'
+channel = 'SLACK_CHANNEL'
+[auth]
+__name = 'DOCKER_AUTH'
+__format = 'json'

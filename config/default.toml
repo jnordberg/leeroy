@@ -1,0 +1,38 @@
+# default configuration, override in config/local-development.toml
+
+# port to listen on
+port = 8080
+
+# whether the app runs behind a trusted proxy
+proxy = false
+
+# application name used for logging
+name = 'leeroy'
+
+# number of worker processes to spawn, 0 = autodetect
+# this determines how many concurrent builds can run
+num_workers = 1
+
+# log level to output at
+log_level = 'debug'
+
+# where to write logs, can be file path or stdout/err
+log_output = 'stdout'
+
+# github webhook secret
+github_secret = 'leeroy'
+
+# slack webhook, optional
+# [slack]
+# channel = 'build-info' # can be omitted to use webhook default channel
+# url = 'https://hooks.slack.com/services/XXXXXXXXX/YYYYYYYYY/ZZZZZZZZZZZZZZ'
+
+# work directory where repositores are checked out, must exist
+# will use os.tmpdir() if unset
+# work_dir = '/tmp'
+
+# docker repository authentication
+# see https://docs.docker.com/engine/api/v1.32/#section/Authentication
+# [auth]
+# username = 'foo'
+# password = 'hunter1'

@@ -1,0 +1,4 @@
+log_level = 'fatal'
+[auth]
+username = 'testman'
+password = 'bughunter99'

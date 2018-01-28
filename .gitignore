@@ -1,0 +1,5 @@
+node_modules/
+lib/
+reports/
+.nyc_output/
+config/local*
