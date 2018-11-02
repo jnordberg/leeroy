@@ -6,6 +6,7 @@ WORKDIR /app
 RUN apk add --no-cache \
     bash \
     build-base \
+    curl-dev \
     git \
     libgit2-dev \
     make \
@@ -13,7 +14,7 @@ RUN apk add --no-cache \
 
 # install application dependencies
 COPY package.json yarn.lock ./
-RUN JOBS=max yarn install --non-interactive --frozen-lockfile
+RUN BUILD_ONLY=true JOBS=max yarn install --non-interactive --frozen-lockfile
 
 # copy in application source
 COPY . .
@@ -28,7 +29,7 @@ RUN yarn install --non-interactive --frozen-lockfile --production \
 # copy built application to runtime image
 FROM node:10-alpine
 WORKDIR /app
-RUN apk add --no-cache libgit2
+RUN apk add --no-cache libgit2 curl
 COPY --from=0 /app/config config
 COPY --from=0 /app/lib lib
 COPY --from=0 /app/node_modules node_modules
