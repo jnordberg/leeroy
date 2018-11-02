@@ -26,7 +26,7 @@ export const app = new Koa()
 const router = new Router()
 const workDir: string = config.has('work_dir') ? config.get('work_dir') : os.tmpdir()
 const workers: cluster.Worker[] = []
-let numWorkers = Number.parseInt(config.get('num_workers'))
+let numWorkers = Number.parseInt(config.get('num_workers'), 10)
 if (numWorkers === 0) {
     numWorkers = os.cpus().length
 }

@@ -1,8 +1,8 @@
-import * as Koa from 'koa'
 import * as assert from 'assert'
-import * as crypto from 'crypto'
-import * as config from 'config'
 import * as Bunyan from 'bunyan'
+import * as config from 'config'
+import * as crypto from 'crypto'
+import * as Koa from 'koa'
 
 import {BuildOptions} from './../build'
 import {logger} from './../logger'
