@@ -1,4 +1,4 @@
-FROM node:9-alpine
+FROM node:10-alpine
 
 WORKDIR /app
 
@@ -26,7 +26,7 @@ RUN yarn install --non-interactive --frozen-lockfile --production \
    && rm -r node_modules/nodegit/vendor
 
 # copy built application to runtime image
-FROM node:9-alpine
+FROM node:10-alpine
 WORKDIR /app
 RUN apk add --no-cache libgit2
 COPY --from=0 /app/config config
