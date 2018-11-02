@@ -67,7 +67,14 @@ export async function build(options: BuildOptions, dir: string, log: Bunyan) {
 async function internalBuild(options: BuildOptions, workDir: string, logger: Bunyan) {
     logger.debug('cloning %s branch %s', options.repository, options.branch)
     const repo = await Git.Clone.clone(options.repository, workDir, {
-        checkoutBranch: options.branch
+        checkoutBranch: options.branch,
+        fetchOpts: {
+            callbacks: {
+                credentials: (url, username) => {
+                    return Git.Cred.sshKeyFromAgent(username)
+                }
+            }
+        }
     })
 
     let ignore = (file: string) => false

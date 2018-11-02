@@ -15,8 +15,11 @@ import * as uuid from 'uuid'
 import {build, BuildOptions} from './build'
 import {logger} from './logger'
 import {Queue} from './queue'
-import {SlackWebhook} from './slack-webhook'
+import {SlackWebhook} from './slack'
 import {hr2ms, parseBool} from './utils'
+
+import githubHook from './hooks/github'
+import gogsHook from './hooks/gogs'
 
 export const version = require('./version')
 export const app = new Koa()
@@ -59,70 +62,26 @@ app.on('error', (error) => {
     logger.error(error, 'Application error')
 })
 
-function verifySignature(secret: string, message: string, signature: string) {
-    const [type, sig1] = signature.split('=')
-    assert.equal(type, 'sha1', 'Only sha1 signatures are supported')
-    const sig2 = crypto.createHmac('sha1', secret).update(message).digest()
-    assert(crypto.timingSafeEqual(Buffer.from(sig1, 'hex'), sig2), 'Signature mismatch')
-}
-
 async function healthcheck(ctx: Koa.Context) {
     const ok = true
     const date = new Date()
     ctx.body = {ok, version, date}
 }
 
-async function githubWebhook(ctx: Koa.Context) {
-    ctx.status = 200
-    const signature = ctx.request.get('X-Hub-Signature')
-    ctx.assert(signature, 400, 'Missing signature')
-    try {
-        verifySignature(config.get('github_secret'), ctx.request['rawBody'], signature)
-    } catch (error) {
-        logger.warn(error, 'invalid signature')
-        ctx.throw('Invalid signature', 400)
-    }
-
-    const event = ctx.request.get('X-GitHub-Event')
-    if (event === 'ping') {
-        ctx.body = 'Pong'
-        return
-    } else if (event !== 'push') {
-        ctx.throw('Invalid event', 400)
-    }
-
-    const payload = ctx.request['body']
-    const matches = /^refs\/heads\/(.+)$/.exec(payload.ref)
-    if (!matches || !matches[1]) {
-        ctx.throw('No branch ref', 400)
-        return
-    }
-
-    // Skip deleted branches
-    if (payload.deleted) {
-        return
-    }
-
-    const branch = matches[1]
-    const repository = payload.repository.clone_url
-    const name = payload.repository.full_name
-    const tag = payload.repository.master_branch === branch ? 'latest' : branch
-
-    const id = uuid()
-    const options: BuildOptions = {
-        branch, name, repository, tag
-    }
-
-    queue.push({id, options, time: process.hrtime()})
-    logger.info({job_id: id, options, queue_length: queue.items.length}, 'build queued')
-}
-
 router.get('/.well-known/healthcheck.json', healthcheck)
 router.get('/', healthcheck)
-router.post('/hooks/github', githubWebhook)
+router.post('/hooks/github', githubHook(queueJob))
+router.post('/hooks/gogs', gogsHook(queueJob))
 
 app.use(KoaBody())
 app.use(router.routes())
+
+/** Adds a set of BuildOptions to the job queue */
+function queueJob(options: BuildOptions) {
+    const id = uuid()
+    queue.push({id, options, time: process.hrtime()})
+    logger.info({job_id: id, options, queue_length: queue.items.length}, 'build queued')
+}
 
 function run(job: BuildJob) {
     const start = process.hrtime()

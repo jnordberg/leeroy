@@ -5,6 +5,7 @@ log_level = 'LOG_LEVEL'
 log_output = 'LOG_OUTPUT'
 work_dir = 'WORK_DIR'
 github_secret = 'GITHUB_SECRET'
+gogs_secret = 'GOGS_SECRET'
 [slack]
 url = 'SLACK_URL'
 channel = 'SLACK_CHANNEL'

@@ -22,6 +22,9 @@ log_output = 'stdout'
 # github webhook secret
 github_secret = 'leeroy'
 
+# gogs webhook secret (will use github secret if unset)
+# gogs_secret = 'jenkins'
+
 # slack webhook, optional
 # [slack]
 # channel = 'build-info' # can be omitted to use webhook default channel
