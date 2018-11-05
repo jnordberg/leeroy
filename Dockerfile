@@ -29,13 +29,20 @@ RUN yarn install --non-interactive --frozen-lockfile --production \
 # copy built application to runtime image
 FROM node:10-alpine
 WORKDIR /app
-RUN apk add --no-cache libgit2 curl
+RUN apk add --no-cache \
+    curl \
+    libgit2 \
+    openssh-client
 COPY --from=0 /app/config config
 COPY --from=0 /app/lib lib
 COPY --from=0 /app/node_modules node_modules
 
-# run in production mode on port 8080
-EXPOSE 8080
-ENV PORT 8080
+# spin up a ssh agent if none is forwarded
+ENV SSH_AUTH_SOCK /ssh-agent
+RUN test -S $SSH_AUTH_SOCK || ssh-agent -a $SSH_AUTH_SOCK &>/dev/null
+
+# run in production mode by default
 ENV NODE_ENV production
+
+# start service
 CMD [ "node", "lib/app.js" ]
