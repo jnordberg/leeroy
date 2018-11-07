@@ -51,7 +51,7 @@ export default function hook(queueJob: (BuildOptions) => void)  {
         const repository = payload.repository.private ?
             payload.repository.ssh_url : payload.repository.clone_url
         const name = payload.repository.full_name
-        const tag = payload.repository.master_branch === branch ? 'latest' : branch
+        const tag = payload.repository.default_branch === branch ? 'latest' : branch
 
         queueJob({branch, name, repository, tag})
     }
