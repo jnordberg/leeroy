@@ -71,7 +71,14 @@ async function internalBuild(options: BuildOptions, workDir: string, logger: Bun
         fetchOpts: {
             callbacks: {
                 credentials: (url, username) => {
-                    return Git.Cred.sshKeyFromAgent(username)
+                    if (config.has('ssh')) {
+                        const pubkey: string = config.get('ssh.pubkey')
+                        const privkey: string = config.get('ssh.privkey')
+                        const password: string = config.has('ssh.password') ? config.get('ssh.password') : ''
+                        return Git.Cred.sshKeyNew(username, pubkey, privkey, password)
+                    } else {
+                        return Git.Cred.sshKeyFromAgent(username)
+                    }
                 }
             }
         }

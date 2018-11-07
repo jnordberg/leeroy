@@ -9,6 +9,10 @@ gogs_secret = 'GOGS_SECRET'
 [slack]
 url = 'SLACK_URL'
 channel = 'SLACK_CHANNEL'
+[ssh]
+pubkey = 'SSH_PUBKEY'
+privkey = 'SSH_PRIVKEY'
+password = 'SSH_PASSWORD'
 [auth]
 __name = 'DOCKER_AUTH'
 __format = 'json'
