@@ -1,8 +1,9 @@
 import * as assert from 'assert'
 import * as Bunyan from 'bunyan'
+import * as cp from 'child_process'
 import * as cluster from 'cluster'
 import * as config from 'config'
-import * as crypto from 'crypto'
+import * as fs from 'fs-extra'
 import * as http from 'http'
 import * as Koa from 'koa'
 import * as KoaBody from 'koa-bodyparser'
@@ -20,6 +21,8 @@ import {hr2ms, parseBool} from './utils'
 
 import githubHook from './hooks/github'
 import gogsHook from './hooks/gogs'
+
+const exec = util.promisify(cp.exec)
 
 export const version = require('./version')
 export const app = new Koa()
@@ -134,16 +137,41 @@ function run(job: BuildJob) {
     })
 }
 
+async function isSocket(filename: string) {
+    try {
+        const stat = await fs.stat(filename)
+        return stat.isSocket()
+    } catch (error) {
+        if (error.code === 'ENOENT') {
+            return false
+        } else {
+            throw error
+        }
+    }
+}
+
 async function main() {
     if (cluster.isMaster) {
         logger.info({version}, 'starting server')
     }
+
+    let sshAgent: cp.ChildProcess | undefined
 
     const server = http.createServer(app.callback())
     const listen = util.promisify(server.listen.bind(server))
     const close = util.promisify(server.close.bind(server))
 
     if (cluster.isMaster) {
+        // spin up a ssh agent if none is found
+        if (!process.env['SSH_AUTH_SOCK']) {
+            process.env['SSH_AUTH_SOCK'] = `.ssh-agent-${ process.pid }`
+        }
+        const sshAuthSock = process.env['SSH_AUTH_SOCK']!
+        if (!await isSocket(sshAuthSock)) {
+            logger.info('starting a ssh agent on %s', sshAuthSock)
+            sshAgent = cp.spawn('ssh-agent', ['-d', '-a', sshAuthSock])
+        }
+
         logger.info('spawning %d worker(s)', numWorkers)
         for (let i = 0; i < numWorkers; i++) {
             workers.push(cluster.fork())
@@ -157,6 +185,15 @@ async function main() {
 
     if (cluster.isMaster) {
         let exiting = false
+
+        if (sshAgent) {
+            sshAgent.on('exit', () => {
+                if (!exiting) {
+                    logger.warn('ssh agent died prematurley')
+                }
+            })
+        }
+
         const exit = async () => {
             await close()
             // TODO: wait for queue to drain

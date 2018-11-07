@@ -37,10 +37,6 @@ COPY --from=0 /app/config config
 COPY --from=0 /app/lib lib
 COPY --from=0 /app/node_modules node_modules
 
-# spin up a ssh agent if none is forwarded
-ENV SSH_AUTH_SOCK /ssh-agent
-RUN test -S $SSH_AUTH_SOCK || ssh-agent -a $SSH_AUTH_SOCK &>/dev/null
-
 # run in production mode by default
 ENV NODE_ENV production
 
